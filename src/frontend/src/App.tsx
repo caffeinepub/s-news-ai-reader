@@ -7,15 +7,17 @@ import {
   Play,
   Radio,
   Tv2,
+  Upload,
   VideoIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+const DEFAULT_PRESENTER_IMAGE =
+  "https://images2.imgbox.com/6a/58/G2XNJ8Sj_o.png";
 const DID_API_KEY =
   "Basic Y2hpbm5pcGVsbGlzdWRoZWVyQGdtYWlsLmNvbQ:cQ1uQBeq3NszTNNg0A-LP";
-const PRESENTER_IMAGE = "https://i.ibb.co/60S780t/gBW1RJx.jpg";
 const POLL_INTERVAL = 3000;
 
 type GenerationState = "idle" | "creating" | "polling" | "done" | "error";
@@ -26,14 +28,36 @@ export default function App() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [progressMsg, setProgressMsg] = useState("");
+  const [presenterImage, setPresenterImage] = useState<string>(
+    DEFAULT_PRESENTER_IMAGE,
+  );
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const stopPolling = () => {
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setPresenterImage(base64);
+      setImagePreview(base64);
+      toast.success("Presenter image updated! Using your uploaded image.");
+    };
+    reader.readAsDataURL(file);
   };
 
   const pollTalk = async (talkId: string) => {
@@ -86,7 +110,7 @@ export default function App() {
     setVideoUrl(null);
     setErrorMsg(null);
     setState("creating");
-    setProgressMsg("Submitting text to D-ID API…");
+    setProgressMsg("Submitting to D-ID API…");
 
     try {
       const res = await fetch("https://api.d-id.com/talks", {
@@ -104,7 +128,7 @@ export default function App() {
               voice_id: "te-IN-ShrutiNeural",
             },
           },
-          source_url: PRESENTER_IMAGE,
+          source_url: presenterImage,
         }),
       });
 
@@ -134,7 +158,6 @@ export default function App() {
       {/* Header */}
       <header className="bg-primary text-primary-foreground shadow-news">
         <div className="container max-w-4xl mx-auto">
-          {/* Top bar */}
           <div className="flex items-center justify-between py-2 border-b border-primary-foreground/20 text-xs font-sans tracking-wide">
             <div className="flex items-center gap-2 opacity-80">
               <Radio className="w-3 h-3" />
@@ -150,7 +173,6 @@ export default function App() {
             </span>
           </div>
 
-          {/* Brand */}
           <div className="flex items-center gap-4 py-4">
             <div className="flex items-center justify-center w-14 h-14 rounded bg-primary-foreground/10 border-2 border-primary-foreground/30">
               <Tv2 className="w-7 h-7 text-primary-foreground" />
@@ -172,7 +194,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Breaking news ticker */}
         <div className="bg-accent text-accent-foreground py-1.5 overflow-hidden">
           <div className="container max-w-4xl mx-auto flex items-center gap-3">
             <span className="flex-shrink-0 bg-primary-foreground text-primary text-xs font-bold px-2 py-0.5 rounded">
@@ -193,9 +214,75 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
         >
+          {/* Presenter Image Upload card */}
+          <div className="bg-card border border-border rounded-lg shadow-news overflow-hidden mb-6">
+            <div className="px-6 py-4 border-b border-border flex items-center gap-3">
+              <Upload className="w-5 h-5 text-primary" />
+              <div>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Presenter Image
+                </h2>
+                <p className="text-muted-foreground text-sm">
+                  Upload your own news anchor image (JPG or PNG)
+                </p>
+              </div>
+            </div>
+            <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Presenter preview"
+                  className="w-20 h-20 rounded-full object-cover border-2 border-primary shadow"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center">
+                  <Upload className="w-7 h-7 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading}
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Image
+                </Button>
+                {imagePreview && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-muted-foreground"
+                    onClick={() => {
+                      setPresenterImage(DEFAULT_PRESENTER_IMAGE);
+                      setImagePreview(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                      toast.success("Reverted to default presenter image.");
+                    }}
+                    disabled={isLoading}
+                  >
+                    Reset to default
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {imagePreview
+                    ? "Using your uploaded image as presenter"
+                    : "Using default presenter. Upload your own anchor photo."}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Studio card */}
           <div className="bg-card border border-border rounded-lg shadow-news overflow-hidden">
-            {/* Card header */}
             <div className="px-6 py-4 border-b border-border flex items-center gap-3">
               <VideoIcon className="w-5 h-5 text-primary" />
               <div>
@@ -210,7 +297,6 @@ export default function App() {
             </div>
 
             <div className="p-6 space-y-5">
-              {/* Textarea */}
               <div className="space-y-2">
                 <label
                   className="text-sm font-semibold text-foreground block"
@@ -236,7 +322,6 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Generate button */}
               <Button
                 data-ocid="news.primary_button"
                 size="lg"
@@ -257,7 +342,6 @@ export default function App() {
                 )}
               </Button>
 
-              {/* Progress state */}
               <AnimatePresence>
                 {isLoading && (
                   <motion.div
@@ -291,7 +375,6 @@ export default function App() {
                 )}
               </AnimatePresence>
 
-              {/* Error state */}
               <AnimatePresence>
                 {state === "error" && errorMsg && (
                   <motion.div
@@ -319,7 +402,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Video player */}
           <AnimatePresence>
             {state === "done" && videoUrl && (
               <motion.div
@@ -376,7 +458,6 @@ export default function App() {
         </motion.div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border bg-muted/50 py-6">
         <div className="container max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
           <span className="font-display font-bold text-foreground">S News</span>
