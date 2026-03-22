@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/assets/fonts/PlayfairDisplay.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.375rem;
+
+    /* S News Red/White brand palette */
+    --background: 0.98 0 0;
+    --foreground: 0.15 0.01 20;
+    --card: 1 0 0;
+    --card-foreground: 0.15 0.01 20;
+    --popover: 1 0 0;
+    --popover-foreground: 0.15 0.01 20;
+
+    /* Primary: deep news red */
+    --primary: 0.48 0.22 27;
+    --primary-foreground: 1 0 0;
+
+    /* Secondary: light gray */
+    --secondary: 0.95 0 0;
+    --secondary-foreground: 0.15 0.01 20;
+
+    --muted: 0.95 0 0;
+    --muted-foreground: 0.5 0.01 20;
+
+    /* Accent: bright red */
+    --accent: 0.54 0.24 27;
+    --accent-foreground: 1 0 0;
+
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+
+    --border: 0.88 0 0;
+    --input: 0.88 0 0;
+    --ring: 0.48 0.22 27;
+
+    --chart-1: 0.48 0.22 27;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+
+    --sidebar: 0.985 0 0;
+    --sidebar-foreground: 0.145 0 0;
+    --sidebar-primary: 0.48 0.22 27;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.97 0 0;
+    --sidebar-accent-foreground: 0.205 0 0;
+    --sidebar-border: 0.922 0 0;
+    --sidebar-ring: 0.48 0.22 27;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+}
