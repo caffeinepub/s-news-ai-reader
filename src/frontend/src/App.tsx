@@ -15,8 +15,7 @@ import { toast } from "sonner";
 
 const DID_API_KEY =
   "Basic Y2hpbm5pcGVsbGlzdWRoZWVyQGdtYWlsLmNvbQ:cQ1uQBeq3NszTNNg0A-LP";
-const PRESENTER_IMAGE =
-  "https://raw.githubusercontent.com/Sudheer-Chinnipelli/test/main/image.jpg";
+const PRESENTER_IMAGE = "https://i.ibb.co/60S780t/gBW1RJx.jpg";
 const POLL_INTERVAL = 3000;
 
 type GenerationState = "idle" | "creating" | "polling" | "done" | "error";
